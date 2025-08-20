@@ -1,12 +1,12 @@
 import React from 'react'
 import { Text, View } from 'react-native'
 
-const studyset = () => {
+const uploadfile = () => {
   return (
     <View>
-      <Text>studyset</Text>
+      <Text>uploadfile</Text>
     </View>
   )
 }
 
-export default studyset
+export default uploadfile
