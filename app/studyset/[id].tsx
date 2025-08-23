@@ -2,7 +2,7 @@ import ContentFab from '@/components/ContentFab';
 import EmptyState from '@/components/EmptyState';
 import FileItem from '@/components/FileItem';
 import MaterialSection from '@/components/MaterialSection';
-import NoteItem from '@/components/NoteItem';
+import NoteDisplay from '@/components/NoteDisplay';
 import { useContentStore } from '@/store/contentStore';
 import { useSetStore } from '@/store/setsStore';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -122,12 +122,12 @@ const SetScreen = () => {
           ) : (
             // Render existing notes
             notes.map(note => (
-              <NoteItem
-                key={note.id}
-                title={note.title}
-                preview={note.text_content?.substring(0, 100)}
-                onPress={() => console.log('Open note', note.id)}
+              <NoteDisplay 
+              key={note.id}
+              title={note.title}
+              content={note.text_content || ''}
               />
+              
             ))
           )}
         </MaterialSection>

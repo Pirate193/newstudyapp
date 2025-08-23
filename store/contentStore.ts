@@ -24,6 +24,8 @@ interface ContentState{
 
     fetchContent:(setId:string)=>Promise<void>;
     createNote:(setId:string,title:string,content:string)=>Promise<void>;
+    updateNote:(id:string,title:string,content:string)=>Promise<void>;
+    getNoteContent:(id:string)=>Promise<string>;
     uploadFile:(setId:string,fileUri:string,fileName:string,type:'pdf'|'image')=>Promise<void>;
     createFlashcard:(setId:string,title:string,cards:{question:string,answer:string}[])=>Promise<void>;
     updateContent:(id:string,updates:Partial<ContentItem>)=>Promise<void>;
@@ -68,13 +70,54 @@ export const useContentStore=create<ContentState>((set,get)=>({
                 }])
                 .select('*')
                 .single();
+            console.log('created note',data,error)
             if(error) throw error;
             set((state)=>({
                 items:[data,...state.items],
                 loading:false
             }));
         }catch(error:any){
+            console.log('create note error',error)
             set({error:error.message,loading:false});
+        }
+    },
+    updateNote:async(id:string,title:string,content:string)=>{
+        set({loading:true,error:null});
+        try{
+            const{data,error}= await supabase
+                  .from('study_content')
+                  .update({
+                    title,
+                    text_content:content
+                  })
+                  .eq('id',id)
+                  .select('*')
+                  .single();
+
+            if(error) throw error;
+
+            set((state)=>({
+                items:state.items.map(item=>item.id===id?{...item,title,text_content:content}:item),
+                loading:false
+            }));
+        }catch(error:any){
+            set({error:error.message,loading:false});
+        }
+    },
+        
+    getNoteContent:async(id:string)=>{
+        try{
+            const {data,error}=await supabase
+                .from('study_content')
+                .select('text_content,title')
+                .eq('id',id)
+                .single();
+            if(error) throw error;
+             return data.text_content ||'';
+        }catch(error:any){
+            console.error('get note content error:',error);
+            return '';
+
         }
     },
     uploadFile:async(setId:string,fileUri:string,fileName:string,type:'pdf'|'image')=>{
