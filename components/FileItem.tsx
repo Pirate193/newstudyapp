@@ -1,16 +1,31 @@
+import { useContentStore } from '@/store/contentStore';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 interface FileItemProps{
+    id:string;
     name:string;
     type:string;
-    onPress:()=>void;
+    filePath:string;
 }
 
-const FileItem = ({name,type,onPress}:FileItemProps) => {
+const FileItem = ({id,name,type,filePath}:FileItemProps) => {
+  const {downloadFile}= useContentStore();
+  const handleOpenFile= async()=>{
+    try{
+      const fileuri = await downloadFile(filePath);
+      if(fileuri){
+        
+      }
+      Alert.alert('file ready',`file "${name}" is ready to open`)
+    }catch(error){
+      console.error('error opening file:',error);
+      Alert.alert('error','failed to open file try again')
+    }
+  }
   return (
-    <TouchableOpacity onPress={onPress} className='flex-row items-center p-3 bg-secondary rounded-lg mb-2'>
+    <TouchableOpacity onPress={handleOpenFile} className='flex-row items-center p-3 bg-secondary rounded-lg mb-2'>
      <Ionicons name='document' size={24} color='white' />
      <View>
         <Text className='text-base font-medium mb-1'numberOfLines={1}>

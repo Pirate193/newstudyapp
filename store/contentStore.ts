@@ -128,15 +128,37 @@ export const useContentStore=create<ContentState>((set,get)=>({
             const fileExt = fileName.split('.').pop();
             const timestamp = Date.now();
             const newFileName = `${user.id}/${setId}/${timestamp}.${fileExt}`;
+            
+            const {data:signedUrlData,error:signedUrlError}= await supabase
+                              .storage
+                              .from('study_files')
+                              .createSignedUrl(newFileName,60*60*24*30);
 
-            const fileBlob = await FileSystem.readAsStringAsync(fileUri,{encoding: FileSystem.EncodingType.Base64,});
-            const {error:uploadError}=await supabase.storage
-                .from('study_files')
-                .upload(newFileName,fileBlob,{
-                    contentType:type==='pdf'?'application/pdf':'image/jpeg',
-                });
+            if (signedUrlError) throw signedUrlError;
+            const uploadResult = await FileSystem.uploadAsync(
+                signedUrlData.signedUrl,
+                fileUri,
+                {
+                    httpMethod:'PUT',
+                    uploadType:FileSystem.FileSystemUploadType.BINARY_CONTENT,
+                    headers:{
+                         "content-Type":type==='pdf'?'application/pdf':'image/jpeg',
+                    },
+                }
+            );
+            if(uploadResult.status!==200){
+                throw new Error('failed to upload file');
+            }
 
-            if(uploadError)throw uploadError;
+
+            // const fileBlob = await FileSystem.readAsStringAsync(fileUri,{encoding: FileSystem.EncodingType.Base64,});
+            // const {error:uploadError}=await supabase.storage
+            //     .from('study_files')
+            //     .upload(newFileName,fileBlob,{
+            //         contentType:type==='pdf'?'application/pdf':'image/jpeg',
+            //     });
+
+            // if(uploadError)throw uploadError;
             const {data,error:dbError}= await supabase 
                  .from('study_content')
                  .insert([{
@@ -147,6 +169,9 @@ export const useContentStore=create<ContentState>((set,get)=>({
                  }])
                  .select('*')
                  .single();
+                
+            
+            console.log('uploaded file',data,dbError);
             
             if(dbError)throw dbError;
             set((state)=>({

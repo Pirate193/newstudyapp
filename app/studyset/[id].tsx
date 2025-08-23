@@ -97,10 +97,12 @@ const SetScreen = () => {
             // Render existing files
             file.map(file => (
               <FileItem
+                id={file.id}
                 key={file.id}
                 name={file.title}
                 type={file.type.toUpperCase()}
-                onPress={() => console.log('Open file', file.id)}
+                filePath={file.file_path||''}
+                
               />
             ))
           )}
